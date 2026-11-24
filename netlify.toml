@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Netlify settings for Project Reborn (this file overrides the dashboard build settings).
+# Full guide: NETLIFY-DEPLOY.md     Variable list: .env.example
+#
+# Build output with NITRO_PRESET=netlify:
+#   dist/                          -> static site (publish)
+#   .netlify/functions-internal/   -> SSR + /api/public/* server routes (generated, do not edit/commit)
+#   netlify/functions/             -> YOUR OWN functions (e.g. cron-tick.mts). Add new ones here.
+# New API routes/bots do NOT need any change here: add src/routes/api/public/*.ts (or a handler in
+# src/server/bot/ + one line in registry.ts) and they are served automatically.
+# ─────────────────────────────────────────────────────────────────────────────
+[build]
+  command = "bun run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+[build.environment]
+  NITRO_PRESET = "netlify"
+  NODE_VERSION = "22"
+
+  # Tells the client code it runs on Netlify (turns off Lovable editor error reporting).
+  VITE_DEPLOY_TARGET = "netlify"
+
+  # Netlify's secret scanner would otherwise fail the build because these public values are (by design)
+  # inside the browser bundle. Do NOT add real secrets (service role key, APP_PASSCODE, ...) here.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,VITE_BOT_API_BASE,VITE_DEPLOY_TARGET"
+
+  # ── WHERE DO DATA REQUESTS GO? (pick ONE mode) ────────────────────────────
+  # NOW ACTIVE: MODE B (the line below is commented out). Needs the env vars in .env.example section B
+  # and docs/supabase-setup.sql run once in YOUR Supabase.
+  # MODE A — "proxy": Netlify serves the UI, the Lovable-published site holds the database key and answers
+  #   /api/public/bot/*. To use it, uncomment the line below. Netlify then runs NO background jobs.
+  # VITE_BOT_API_BASE = "https://officejerome.lovable.app"   # <- Mode A only: uncomment to send data requests to Lovable instead
+  #
+  # MODE B — "standalone": Netlify answers its own /api/public/bot/* and runs the cron + webhook. Needs your OWN
+  #   Supabase project (service role key). Keep VITE_BOT_API_BASE commented out / unset, and set the secrets
+  #   listed in .env.example (section B) in the Netlify dashboard. Steps: NETLIFY-DEPLOY.md.

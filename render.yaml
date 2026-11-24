@@ -1,0 +1,17 @@
+# One-click deploy of the video editor service (the "cloud editor" that Netlify cannot provide because it has no ffmpeg).
+# Render → New → Blueprint → pick this repo. After it is live:
+#   Netlify → Environment variables:  VIDEO_EDITOR_API_URL = https://<your-service>.onrender.com/edit
+#                                     VIDEO_EDITOR_API_KEY = the same key Render generated (Render → the service → Environment)
+#   then Netlify → Deploys → Clear cache and deploy site.
+services:
+  - type: web
+    name: video-editor-service
+    runtime: docker
+    dockerfilePath: ./video-editor-service/Dockerfile
+    dockerContext: .
+    plan: starter            # ffmpeg needs real CPU; the free plan is too slow and sleeps (the 12s clip would time out)
+    healthCheckPath: /health
+    envVars:
+      - key: VIDEO_EDITOR_API_KEY
+        generateValue: true  # random, long enough (the service needs 24+ characters)
+      # PUBLIC_BASE_URL is not needed on Render: the service uses RENDER_EXTERNAL_URL automatically.
