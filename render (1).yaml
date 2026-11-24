@@ -1,0 +1,16 @@
+# Exported from Render on 2026-11-24T07:14:12Z
+version: "1"
+services:
+- type: web
+  name: code-solo-office-v3
+  runtime: docker
+  repo: https://github.com/officebot00-source/code-solo-office-v3
+  plan: free
+  envVars:
+  - key: VIDEO_EDITOR_API_URL
+    sync: false
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  autoDeployTrigger: commit
+  rootDir: .
